@@ -4,5 +4,6 @@ export default defineConfig({
   test: {
     include: ["packages/*/src/**/*.test.ts", "apps/web/src/**/*.test.ts", "tests/unit/**/*.test.ts"],
     environment: "node",
+    fileParallelism: false,
   },
 });
