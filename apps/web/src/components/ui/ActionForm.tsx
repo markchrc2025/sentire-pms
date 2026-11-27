@@ -6,7 +6,7 @@ import { Notice } from "./index";
 type Action = (prev: ActionState, form: FormData) => Promise<ActionState>;
 
 /** A form bound to a server action that shows the result message. resetOnOk clears it after success. */
-export function ActionForm({ action, children, submitLabel = "Save", className = "", resetOnOk = false, inline = false, variant = "primary", confirm }: {
+export function ActionForm({ action, children, submitLabel = "Save", className = "", resetOnOk = false, inline = false, variant = "primary", confirm, showOk = false }: {
   action: Action;
   children?: ReactNode;
   submitLabel?: string;
@@ -15,6 +15,7 @@ export function ActionForm({ action, children, submitLabel = "Save", className =
   inline?: boolean;
   variant?: "primary" | "secondary" | "danger";
   confirm?: string;
+  showOk?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
   const ref = useRef<HTMLFormElement>(null);
@@ -44,7 +45,7 @@ export function ActionForm({ action, children, submitLabel = "Save", className =
           {pending ? "Working" : submitLabel}
         </button>
         {state?.error && (inline ? <span role="alert" className="text-[12px] text-[#991b1b]">{state.error}</span> : <Notice kind="error">{state.error}</Notice>)}
-        {state?.ok && !inline && <span role="status" className="text-[13px] text-[#166534]">{state.ok}</span>}
+        {state?.ok && (!inline || showOk) && <span role="status" className={`text-[13px] text-[#166534] ${showOk ? "font-semibold" : ""}`}>{state.ok}</span>}
       </div>
     </form>
   );

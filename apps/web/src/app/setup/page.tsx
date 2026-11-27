@@ -3,6 +3,7 @@ import { isCloud } from "@sentire-pms/core";
 import { getDb } from "@sentire-pms/db";
 import { hasAnyUser } from "@/server/iam/auth";
 import { SetupForm } from "./SetupForm";
+import { RestoreForm } from "./RestoreForm";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,10 @@ export default async function SetupPage() {
         <h1 className="m-0 text-2xl font-bold">Set up this hub</h1>
         <p className="m-0 mt-1 text-sm text-muted">Create your company, your first property and the owner account. You can add rooms and staff after this.</p>
         <SetupForm today={today} />
+        <details className="mt-6 border-t border-line pt-4">
+          <summary className="cursor-pointer text-[14px] font-semibold">Replacing a hub PC? Restore the property from Sentire Cloud</summary>
+          <RestoreForm />
+        </details>
       </section>
     </main>
   );

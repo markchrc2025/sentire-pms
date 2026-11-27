@@ -5,12 +5,14 @@ import { getDb } from "@sentire-pms/db";
 import { hasAnyUser } from "@/server/iam/auth";
 import { sentireAccountEnabled } from "@/server/iam/sentire-account";
 import { SignInForm } from "./SignInForm";
+import { requirePairedDevice } from "@/server/iam/request";
 
 export const dynamic = "force-dynamic";
 
 export default async function SignInPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
   const { next, error } = await searchParams;
   if (!isCloud() && process.env.DATABASE_URL && !(await hasAnyUser(getDb()))) redirect("/setup");
+  if (!isCloud()) await requirePairedDevice();
   return (
     <main className="grid min-h-screen place-items-center p-6">
       <section className="w-full max-w-[420px] rounded-card border border-line bg-surface p-8">

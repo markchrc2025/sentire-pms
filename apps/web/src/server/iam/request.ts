@@ -5,9 +5,18 @@ import { getDb } from "@sentire-pms/db";
 import { SESSION_COOKIE, userForToken, type SessionUser } from "./auth";
 import { resolveTenant, type TenantContext } from "./tenant";
 import { NotFoundError } from "./errors";
+import { DEVICE_COOKIE, deviceForToken, pairingRequired } from "./devices";
+
+/** On installed hubs every device must be paired (FR-50). Redirects to /pair otherwise. */
+export async function requirePairedDevice(): Promise<void> {
+  if (!pairingRequired()) return;
+  const d = await deviceForToken(getDb(), (await cookies()).get(DEVICE_COOKIE)?.value);
+  if (!d) redirect("/pair");
+}
 
 /** The signed-in user, or a redirect to sign-in. */
 export async function requireUser(): Promise<SessionUser> {
+  await requirePairedDevice();
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   const user = await userForToken(getDb(), token);
   if (!user) redirect("/sign-in");

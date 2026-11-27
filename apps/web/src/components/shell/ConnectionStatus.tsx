@@ -46,11 +46,12 @@ export function ConnectionStatus({ initial }: { initial?: Status | null }) {
     tone = "bg-[#eff6ff] text-[#1d4ed8]";
     dot = "bg-[#2563eb]";
   } else if (s?.sync === "online") {
-    label = s.pending ? `Online, ${s.pending} to sync` : "Online";
+    label = s.pending ? `Syncing, ${s.pending} to send` : "Online";
     tone = "bg-[#ecfdf3] text-[#166534]";
     dot = "bg-[#16a34a]";
   } else if (s?.sync === "offline") {
-    label = `Offline${s.pending ? `, ${s.pending} waiting` : ""}`;
+    const since = s.lastSyncAt ? new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Manila", hour: "numeric", minute: "2-digit", month: "short", day: "numeric" }).format(new Date(s.lastSyncAt)) : null;
+    label = `Offline${since ? ` since ${since}` : ""}${s.pending ? `, ${s.pending} waiting` : ""}`;
     tone = "bg-[#fffbeb] text-[#92400e]";
     dot = "bg-[#d97706]";
   } else if (s?.sync === "not-configured") {
