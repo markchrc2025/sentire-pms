@@ -50,7 +50,7 @@ jobs:
             # Admins may read the locked-down data folder for diagnosis.
             icacls "$env:ProgramData\SentirePMS" /grant "*S-1-5-32-544:(OI)(CI)F" /T /C | Out-Null
             Get-ChildItem "$env:ProgramData\SentirePMS" -Recurse -Depth 1 | Select-Object FullName | Format-Table -HideTableHeaders
-            Get-ChildItem "$env:ProgramData\SentirePMS\logs", "$env:ProgramFiles\Sentire PMS\hub\*.log" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "== $($_.FullName)"; Get-Content $_.FullName -Tail 80 }
+            Get-ChildItem "$env:ProgramData\SentirePMS\logs", "$env:ProgramFiles\Sentire PMS\hub\*.log" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "== $($_.FullName)"; Get-Content $_.FullName -Tail 80 -ErrorAction Continue }
             exit 1
           }
           $h | ConvertTo-Json

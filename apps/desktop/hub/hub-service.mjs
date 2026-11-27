@@ -53,8 +53,12 @@ function initDatabase(s) {
   const r = spawnSync(path.join(config.pgBin, exe("initdb")), ["-D", files.pgdata, "-U", "pms", "--pwfile", pw, "-E", "UTF8", "--locale=C", "--auth=scram-sha-256"], { encoding: "utf8" });
   fs.rmSync(pw, { force: true });
   if (r.status !== 0) throw new Error(`initdb failed: ${r.stderr || r.stdout}`);
-  // Best effort: encrypt the data folder with Windows EFS where the edition supports it.
-  if (isWin) spawnSync("cipher", ["/e", "/s:" + config.dataRoot], { encoding: "utf8" });
+  // Best effort: encrypt the database files and secrets with Windows EFS where the edition supports
+  // it. Logs stay readable by Administrators for support.
+  if (isWin) {
+    spawnSync("cipher", ["/e", "/s:" + files.pgdata], { encoding: "utf8" });
+    spawnSync("cipher", ["/e", files.secrets], { encoding: "utf8" });
+  }
 }
 
 function pgCtl(args) {
