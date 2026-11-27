@@ -6,6 +6,7 @@ import { getDb } from "@sentire-pms/db";
 import { properties, users } from "@sentire-pms/db/schema";
 import { requireTenant } from "../iam/request";
 import { propertiesForUser } from "../iam/auth";
+import type { Role } from "../iam/permissions";
 
 export interface ShellContext {
   propertySlug: string;
@@ -15,6 +16,7 @@ export interface ShellContext {
   userName: string;
   userInitials: string;
   role: string;
+  roleKey: Role;
 }
 
 /** Data the app shell needs. The staff app runs on the hub only and needs a signed-in user with a role at the property. */
@@ -35,6 +37,7 @@ export async function getShellContext(propertySlug: string): Promise<ShellContex
     userName: name,
     userInitials: name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join("") || "?",
     role: labelRole(ctx.role),
+    roleKey: ctx.role,
   };
 }
 

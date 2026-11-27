@@ -2,6 +2,7 @@ import type { Db } from "@sentire-pms/db";
 import { auditLog, outboxEvents } from "@sentire-pms/db/schema";
 import { newId } from "@sentire-pms/core";
 import type { TenantContext } from "../iam/tenant";
+import { toJson } from "./json";
 
 export type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 
@@ -26,8 +27,8 @@ export async function recordChange(tx: Tx, ctx: TenantContext, change: Change): 
     action: change.action,
     entity: change.entity,
     entityId: change.entityId,
-    before: change.before ?? null,
-    after: change.after ?? null,
+    before: toJson(change.before),
+    after: toJson(change.after),
   });
   await tx.insert(outboxEvents).values({
     eventId: newId(),
@@ -36,6 +37,6 @@ export async function recordChange(tx: Tx, ctx: TenantContext, change: Change): 
     entity: change.entity,
     entityId: change.entityId,
     op: change.op,
-    payload: { action: change.action, after: change.after ?? null },
+    payload: { action: change.action, after: toJson(change.after) },
   });
 }
