@@ -54,9 +54,9 @@ jobs:
             exit 1
           }
           $h | ConvertTo-Json
-          $r = Invoke-WebRequest http://localhost:3000/sign-in -MaximumRedirection 0 -SkipHttpErrorCheck
-          Write-Host "sign-in answers $($r.StatusCode) -> $($r.Headers.Location)"
-          if ("$($r.Headers.Location)" -notmatch "/pair|/setup") { Write-Host "expected the pairing or setup page"; exit 1 }
+          $r = curl.exe -s -o NUL -w "%{http_code} %{redirect_url}" http://localhost:3000/sign-in
+          Write-Host "sign-in answers $r"
+          if ("$r" -notmatch "/pair|/setup") { Write-Host "expected the pairing or setup page"; exit 1 }
       - name: Restart the service; the hub comes back with its data
         shell: pwsh
         run: |
