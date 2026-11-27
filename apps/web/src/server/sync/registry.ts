@@ -20,6 +20,9 @@ export const SYNCED: SyncedEntity[] = [
   { entity: "room", table: "rooms", scope: "property" },
   { entity: "room_block", table: "room_blocks", scope: "property" },
   { entity: "tax_fee", table: "tax_fees", scope: "property" },
+  { entity: "policy", table: "policies", scope: "property" },
+  { entity: "rate_plan", table: "rate_plans", scope: "property" },
+  { entity: "daily_rate", table: "daily_rates", scope: "property" },
 ];
 
 export function registerSynced(...e: SyncedEntity[]) {

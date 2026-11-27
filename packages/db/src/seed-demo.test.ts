@@ -34,6 +34,9 @@ describe.skipIf(!TEST_DATABASE_URL)("seedDemo users (integration, Postgres)", ()
     expect(await c.db.select().from(roomTypes)).toHaveLength(4);
     expect(await c.db.select().from(rooms)).toHaveLength(25);
     expect((await c.db.select().from(taxFees)).map((t) => t.code).sort()).toEqual(["PWD", "SC", "VAT"]);
+    const { ratePlans, policies } = await import("./schema");
+    expect((await c.db.select().from(ratePlans)).map((r) => r.code).sort()).toEqual(["BAR", "BB", "NR"]);
+    expect(await c.db.select().from(policies)).toHaveLength(2);
     await c.pool.end();
   });
 });
