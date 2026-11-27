@@ -10,7 +10,7 @@ export async function register() {
   if (process.env.PMS_SEED_DEMO === "1" && process.env.PMS_MODE !== "cloud") {
     await import("./server/demo");
     const seeded = await seedDemo(getDb());
-    console.log(seeded ? "[boot] demo property seeded" : "[boot] demo seed skipped, properties exist");
+    console.log(seeded ? "[boot] demo property created and seeded" : "[boot] demo data checked (missing parts added, existing data kept)");
   }
   if (process.env.PMS_MODE !== "cloud" && process.env.PMS_SYNC_IN_PROCESS !== "0") {
     const { startSyncLoop } = await import("./server/sync/loop");
