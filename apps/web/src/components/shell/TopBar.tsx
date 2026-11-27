@@ -19,7 +19,7 @@ function Icon({ d, label }: { d: string; label: string }) {
   );
 }
 
-export function TopBar({ propertySlug, propertyName, properties, userInitials, userName, role, connection }: {
+export function TopBar({ propertySlug, propertyName, properties, userInitials, userName, role, connection, canBook = true }: {
   propertySlug: string;
   propertyName: string;
   properties: PropertyOption[];
@@ -27,6 +27,7 @@ export function TopBar({ propertySlug, propertyName, properties, userInitials, u
   userName: string;
   role: string;
   connection?: ConnectionStateT | null;
+  canBook?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -55,10 +56,10 @@ export function TopBar({ propertySlug, propertyName, properties, userInitials, u
         </label>
         <div className="ml-auto flex items-center gap-1.5">
           <ConnectionStatus initial={connection} />
-          <Link href={`${base}/reservations/new`} className="flex h-9 items-center gap-1.5 rounded-control bg-accent px-3.5 text-[13px] font-semibold text-white no-underline hover:bg-accent-hover hover:text-white">
+          {canBook && <Link href={`${base}/reservations/new`} className="flex h-9 items-center gap-1.5 rounded-control bg-accent px-3.5 text-[13px] font-semibold text-white no-underline hover:bg-accent-hover hover:text-white">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
             New reservation
-          </Link>
+          </Link>}
           <Link href={`${base}/calendar`} className="flex h-9 w-9 items-center justify-center rounded-control text-ink-2 hover:bg-surface-muted">
             <Icon label="Calendar" d="M3 5h18v16H3zM3 10h18M8 3v4M16 3v4" />
           </Link>

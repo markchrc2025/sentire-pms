@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { findNav } from "@/components/shell/nav";
+import { requireTenant } from "@/server/iam/request";
+import { can } from "@/server/iam/tenant";
+import { Notice } from "@/components/ui";
 
 const MOCKUP = "https://claude.ai/artifact/38WkRbrpdW9NDpLtNAgEAf";
 
@@ -8,6 +11,8 @@ export default async function SectionPage({ params }: { params: Promise<{ proper
   const { propertySlug, section } = await params;
   const item = findNav(section.join("/"));
   if (!item) notFound();
+  const ctx = await requireTenant(propertySlug);
+  if (!can(ctx, item.perm)) return <Notice kind="warn">Your role does not include {item.label}.</Notice>;
   return (
     <div className="flex flex-col gap-5">
       <h1 className="m-0 text-[22px] font-bold">{item.label}</h1>

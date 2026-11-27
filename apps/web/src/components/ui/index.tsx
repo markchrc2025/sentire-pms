@@ -117,3 +117,11 @@ export function labelOf(s: string): string {
   const t = s.toLowerCase().replace(/_/g, " ");
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
+
+/** "28 Nov 2026, 1:37 AM" in Manila time. */
+export function formatDateTime(d: Date | null | undefined, timeZone = "Asia/Manila"): string {
+  if (!d) return "";
+  const date = new Intl.DateTimeFormat("en-GB", { timeZone, day: "numeric", month: "short", year: "numeric" }).format(d);
+  const time = new Intl.DateTimeFormat("en-US", { timeZone, hour: "numeric", minute: "2-digit" }).format(d);
+  return `${date}, ${time}`;
+}

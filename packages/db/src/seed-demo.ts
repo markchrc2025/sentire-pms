@@ -1,6 +1,7 @@
 import { and, count, eq } from "drizzle-orm";
 import type { Db } from "./index";
-import { organizations, properties, propertyRoles, users } from "./schema";
+import { organizations, properties, propertyRoles, roomBlocks, rooms, roomTypes, taxFees, users } from "./schema";
+import { defaultTaxFees } from "./defaults";
 import { hashPassword } from "./password";
 
 export const DEMO_PROPERTY_SLUG = "bahay-kubo-marikina";
@@ -53,6 +54,33 @@ export async function seedDemo(db: Db, password = process.env.PMS_DEMO_PASSWORD)
     const [r] = await db.select().from(propertyRoles).where(and(eq(propertyRoles.userId, u!.id), eq(propertyRoles.propertyId, prop.id))).limit(1);
     if (!r) await db.insert(propertyRoles).values({ organizationId: prop.organizationId, propertyId: prop.id, userId: u!.id, role: du.role });
   }
+  await seedPropertySetup(db, prop.organizationId, prop.id);
   for (const step of extraSteps) await step(db, { organizationId: prop.organizationId, propertyId: prop.id });
   return created;
+}
+
+const DEMO_TYPES = [
+  { code: "DLX", name: "Deluxe Queen", kind: "PRIVATE" as const, maxGuests: 2, baseRateCentavos: 320000n, sortOrder: 1, rooms: ["101", "102", "103", "104", "105", "106", "107", "108"] },
+  { code: "TWN", name: "Superior Twin", kind: "PRIVATE" as const, maxGuests: 2, baseRateCentavos: 280000n, sortOrder: 2, rooms: ["201", "202", "203", "204", "205", "206"] },
+  { code: "FAM", name: "Family Suite", kind: "PRIVATE" as const, maxGuests: 4, baseRateCentavos: 550000n, sortOrder: 3, rooms: ["301", "302", "303"] },
+  { code: "DRM", name: "Dorm bed", kind: "DORM_BED" as const, maxGuests: 1, baseRateCentavos: 75000n, sortOrder: 4, rooms: ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"] },
+];
+
+/** Phase 1 demo data: built-in taxes, four room types, 25 rooms and beds, one out-of-service block. */
+async function seedPropertySetup(db: Db, organizationId: string, propertyId: string) {
+  const [{ t } = { t: 0 }] = await db.select({ t: count() }).from(taxFees).where(eq(taxFees.propertyId, propertyId));
+  if (t === 0) await db.insert(taxFees).values(defaultTaxFees(organizationId, propertyId));
+  const [{ n } = { n: 0 }] = await db.select({ n: count() }).from(roomTypes).where(eq(roomTypes.propertyId, propertyId));
+  if (n > 0) return;
+  await db.transaction(async (tx) => {
+    for (const dt of DEMO_TYPES) {
+      const { rooms: numbers, ...type } = dt;
+      const [rt] = await tx.insert(roomTypes).values({ organizationId, propertyId, ...type }).returning();
+      const made = await tx.insert(rooms).values(numbers.map((number, i) => ({ organizationId, propertyId, roomTypeId: rt!.id, number, sortOrder: i }))).returning();
+      if (dt.code === "DLX") {
+        const r105 = made.find((r) => r.number === "105")!;
+        await tx.insert(roomBlocks).values({ organizationId, propertyId, roomId: r105.id, startDate: "2026-11-24", endDate: "2026-11-27", type: "OUT_OF_SERVICE", reason: "[DEMO] Aircon repair" });
+      }
+    }
+  });
 }

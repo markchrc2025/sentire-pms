@@ -2,7 +2,8 @@ import { createHash, randomBytes } from "node:crypto";
 import { and, asc, eq, gt, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@sentire-pms/db";
-import { auditLog, organizations, properties, propertyRoles, sessions, users } from "@sentire-pms/db/schema";
+import { auditLog, organizations, properties, propertyRoles, sessions, taxFees, users } from "@sentire-pms/db/schema";
+import { defaultTaxFees } from "@sentire-pms/db";
 import { hashPassword, passwordProblem, verifyPassword } from "./password";
 
 export const SESSION_COOKIE = "pms_session";
@@ -129,6 +130,7 @@ export async function firstRunSetup(db: Db, raw: unknown): Promise<{ ok: true; p
     const [prop] = await tx.insert(properties).values({ organizationId: org!.id, slug: d.propertySlug, name: d.propertyName, businessDate: d.businessDate }).returning();
     const [owner] = await tx.insert(users).values({ organizationId: org!.id, email: d.ownerEmail, name: d.ownerName, passwordHash }).returning();
     await tx.insert(propertyRoles).values({ organizationId: org!.id, propertyId: prop!.id, userId: owner!.id, role: "OWNER" });
+    await tx.insert(taxFees).values(defaultTaxFees(org!.id, prop!.id));
     await tx.insert(auditLog).values({ organizationId: org!.id, propertyId: prop!.id, actorUserId: owner!.id, action: "hub.setup", entity: "property", entityId: prop!.id, before: null, after: { slug: prop!.slug } });
     return { ok: true as const, propertySlug: prop!.slug };
   });

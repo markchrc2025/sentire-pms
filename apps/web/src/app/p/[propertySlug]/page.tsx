@@ -1,6 +1,13 @@
+import { redirect } from "next/navigation";
+import { requireTenant } from "@/server/iam/request";
+import { can } from "@/server/iam/tenant";
 const TABS = ["Arrivals", "Departures", "In-house", "Stayovers", "Bookings today", "Cancellations", "Overbookings"];
 
-export default function DashboardPage() {
+
+export default async function DashboardPage({ params }: { params: Promise<{ propertySlug: string }> }) {
+  const { propertySlug } = await params;
+  const ctx = await requireTenant(propertySlug);
+  if (!can(ctx, "reservations.view")) redirect(`/p/${propertySlug}/housekeeping`);
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">

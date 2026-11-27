@@ -38,3 +38,4 @@ export async function runMigrations(): Promise<void> {
 export { schema };
 export { seedDemo, registerDemoStep, DEMO_PROPERTY_SLUG, DEMO_USERS } from "./seed-demo";
 export { hashPassword, verifyPassword, passwordProblem } from "./password";
+export { defaultTaxFees } from "./defaults";

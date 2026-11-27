@@ -30,6 +30,10 @@ describe.skipIf(!TEST_DATABASE_URL)("seedDemo users (integration, Postgres)", ()
     expect(all).toHaveLength(5);
     expect(await verifyPassword("demo-pass-123", all[0]!.passwordHash)).toBe(true);
     expect(await c.db.select().from(propertyRoles)).toHaveLength(5);
+    const { rooms, roomTypes, taxFees } = await import("./schema");
+    expect(await c.db.select().from(roomTypes)).toHaveLength(4);
+    expect(await c.db.select().from(rooms)).toHaveLength(25);
+    expect((await c.db.select().from(taxFees)).map((t) => t.code).sort()).toEqual(["PWD", "SC", "VAT"]);
     await c.pool.end();
   });
 });
