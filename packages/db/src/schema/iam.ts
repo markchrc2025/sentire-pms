@@ -1,4 +1,4 @@
-import { boolean, index, pgTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 import { id, timestamps, ulidRef } from "./_helpers";
 import { organizations, properties, role } from "./tenancy";
 
@@ -11,6 +11,10 @@ export const users = pgTable(
     email: varchar("email", { length: 254 }).notNull(),
     name: text("name").notNull(),
     active: boolean("active").notNull().default(true),
+    /** scrypt hash of the local password (hub accounts). Null for accounts that only use Sentire Account. */
+    passwordHash: text("password_hash"),
+    failedSignIns: integer("failed_sign_ins").notNull().default(0),
+    lockedUntil: timestamp("locked_until", { withTimezone: true }),
     /** Hashed copy of the user's credential for offline sign-in on the hub (scrypt). Never the raw secret. */
     offlineCredentialHash: text("offline_credential_hash"),
     /** Hashed quick-switch PIN for shared front desk stations (scrypt). */

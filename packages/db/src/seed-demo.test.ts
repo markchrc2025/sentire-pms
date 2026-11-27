@@ -17,3 +17,19 @@ describe.skipIf(!TEST_DATABASE_URL)("seedDemo (integration, Postgres)", () => {
     expect(await ctx.db.select().from(properties)).toHaveLength(1);
   });
 });
+
+describe.skipIf(!TEST_DATABASE_URL)("seedDemo users (integration, Postgres)", () => {
+  it("creates one staff user per role, with a password only when PMS_DEMO_PASSWORD is given", async () => {
+    const c = await freshTestDb();
+    const { users, propertyRoles } = await import("./schema");
+    const { verifyPassword } = await import("./password");
+    await seedDemo(c.db, undefined);
+    expect((await c.db.select().from(users)).every((u) => u.passwordHash === null)).toBe(true);
+    await seedDemo(c.db, "demo-pass-123");
+    const all = await c.db.select().from(users);
+    expect(all).toHaveLength(5);
+    expect(await verifyPassword("demo-pass-123", all[0]!.passwordHash)).toBe(true);
+    expect(await c.db.select().from(propertyRoles)).toHaveLength(5);
+    await c.pool.end();
+  });
+});
