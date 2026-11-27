@@ -45,10 +45,10 @@ export async function addStaff(db: Db, ctx: TenantContext, raw: unknown) {
       if (u && u.organizationId !== ctx.organizationId) throw new ConflictError("That email belongs to another company's account.");
       if (!u) {
         [u] = await tx.insert(users).values({ organizationId: ctx.organizationId, email: d.email, name: d.name, passwordHash: hash }).returning();
-        await recordChange(tx, ctx, { entity: "user", entityId: u!.id, op: "insert", action: "user.create", after: { id: u!.id, email: u!.email, name: u!.name } });
+        await recordChange(tx, ctx, { entity: "user", entityId: u!.id, op: "insert", action: "user.create", after: u });
       }
       const [role] = await tx.insert(propertyRoles).values({ organizationId: ctx.organizationId, propertyId: ctx.propertyId, userId: u!.id, role: d.role }).returning();
-      await recordChange(tx, ctx, { entity: "property_role", entityId: role!.id, op: "insert", action: "staff.add", after: { userId: u!.id, role: d.role } });
+      await recordChange(tx, ctx, { entity: "property_role", entityId: role!.id, op: "insert", action: "staff.add", after: role });
       return { userId: u!.id, role: d.role };
     });
   } catch (e) {
@@ -94,11 +94,11 @@ export async function setStaffActive(db: Db, ctx: TenantContext, userId: string,
     const r = await roleRow(tx, ctx, userId);
     if (r.role === "OWNER" && ctx.role !== "OWNER") throw new ForbiddenError("Only an Owner can deactivate an Owner.");
     if (r.role === "OWNER" && !active && (await ownersLeft(tx, ctx, userId)) === 0) throw new ValidationError("A property needs at least one active Owner.");
-    const [before] = await tx.select({ id: users.id, active: users.active }).from(users).where(and(eq(users.id, userId), eq(users.organizationId, ctx.organizationId))).for("update");
+    const [before] = await tx.select().from(users).where(and(eq(users.id, userId), eq(users.organizationId, ctx.organizationId))).for("update");
     if (!before) throw new NotFoundError("Staff member not found.");
-    await tx.update(users).set({ active }).where(eq(users.id, userId));
+    const [after] = await tx.update(users).set({ active }).where(eq(users.id, userId)).returning();
     if (!active) await tx.update(sessions).set({ revokedAt: new Date() }).where(and(eq(sessions.userId, userId), sql`${sessions.revokedAt} is null`));
-    await recordChange(tx, ctx, { entity: "user", entityId: userId, op: "update", action: active ? "user.activate" : "user.deactivate", before, after: { id: userId, active } });
+    await recordChange(tx, ctx, { entity: "user", entityId: userId, op: "update", action: active ? "user.activate" : "user.deactivate", before, after });
   });
 }
 
@@ -111,7 +111,8 @@ export async function resetStaffPassword(db: Db, ctx: TenantContext, userId: str
     const r = await roleRow(tx, ctx, userId);
     if (r.role === "OWNER" && ctx.role !== "OWNER" ) throw new ForbiddenError("Only an Owner can reset an Owner's password.");
     await tx.update(users).set({ passwordHash: hash, failedSignIns: 0, lockedUntil: null }).where(and(eq(users.id, userId), eq(users.organizationId, ctx.organizationId)));
+    // Password changes stay on the hub: the audit entry says it happened, without the hash.
     await tx.update(sessions).set({ revokedAt: new Date() }).where(and(eq(sessions.userId, userId), sql`${sessions.revokedAt} is null`));
-    await recordChange(tx, ctx, { entity: "user", entityId: userId, op: "update", action: "user.password_reset", after: { id: userId } });
+    await recordChange(tx, ctx, { entity: "user", entityId: userId, op: "command", action: "user.password_reset", after: { id: userId } });
   });
 }

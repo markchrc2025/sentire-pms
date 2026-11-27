@@ -3,9 +3,10 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getDb } from "@sentire-pms/db";
 import { propertiesForUser, SESSION_COOKIE, signIn } from "@/server/iam/auth";
-import { requestMeta, secureCookies } from "@/server/iam/request";
+import { requestMeta, requirePairedDevice, secureCookies } from "@/server/iam/request";
 
 export async function signInAction(_prev: { error?: string; email?: string } | undefined, form: FormData): Promise<{ error?: string; email?: string }> {
+  await requirePairedDevice();
   const db = getDb();
   const r = await signIn(db, { email: form.get("email"), password: form.get("password") }, await requestMeta());
   if (!r.ok) return { error: r.error, email: String(form.get("email") ?? "") };

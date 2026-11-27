@@ -1,0 +1,18 @@
+<service>
+  <id>SentirePMSHub</id>
+  <name>Sentire PMS Hub</name>
+  <description>Keeps this PC's Sentire PMS hub (database and app) running for the property.</description>
+  <executable>%BASE%\node.exe</executable>
+  <arguments>"%BASE%\hub-service.mjs"</arguments>
+  <workingdirectory>%BASE%</workingdirectory>
+  <startmode>Automatic</startmode>
+  <delayedAutoStart>false</delayedAutoStart>
+  <stoptimeout>60 sec</stoptimeout>
+  <onfailure action="restart" delay="10 sec"/>
+  <onfailure action="restart" delay="30 sec"/>
+  <resetfailure>1 hour</resetfailure>
+  <log mode="roll-by-size">
+    <sizeThreshold>10240</sizeThreshold>
+    <keepFiles>5</keepFiles>
+  </log>
+</service>
