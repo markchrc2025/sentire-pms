@@ -43,6 +43,8 @@ async function seedStays(db: Db, s: { organizationId: string; propertyId: string
     const x = await book("2026-12-10", "2026-12-12", g("Bea", "Santos", "09171110009"), [{ t: TWN, p: BAR, adults: 2 }]);
     await transition(db, ctx, x.id, "CANCELLED", { reason: "[DEMO] Guest changed travel dates" });
     await book("2026-12-20", "2026-12-23", g("Carlo", "Mendoza", "09171110010"), [{ t: FAM, p: BAR, adults: 4 }], "INQUIRY", "EMAIL");
+    // A realistic board: some rooms still to clean, one arrival room inspected.
+    for (const [num, condition] of [["103", "DIRTY"], ["205", "DIRTY"], ["D2", "DIRTY"], ["102", "INSPECTED"]] as const) await db.update(rooms).set({ condition, conditionChangedAt: new Date() }).where(eq(rooms.id, await room(num)));
   } finally {
     await setBd("2026-11-24");
   }

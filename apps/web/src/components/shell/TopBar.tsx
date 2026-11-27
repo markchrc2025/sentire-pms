@@ -33,7 +33,7 @@ export function TopBar({ propertySlug, propertyName, properties, userInitials, u
   const [menu, setMenu] = useState(false);
   const base = `/p/${propertySlug}`;
   return (
-    <header className="relative z-20 border-b border-line bg-surface">
+    <header className="relative z-20 border-b border-line bg-surface print:hidden">
       <div className="flex min-h-14 flex-wrap items-center gap-3 px-5 py-2">
         <Link href={base} className="flex items-center gap-2.5 text-ink no-underline">
           <span className="flex h-8 w-8 items-center justify-center rounded-control bg-tile text-[15px] font-bold text-white" aria-hidden="true">S</span>

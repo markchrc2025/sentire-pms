@@ -183,11 +183,8 @@ export default async function ReservationPage({ params }: { params: Promise<{ pr
               <div className="flex flex-col gap-3">
                 {next.includes("CONFIRMED") && <ActionForm action={transitionAction.bind(null, propertySlug, r.id, "CONFIRMED")} submitLabel="Confirm" />}
                 {next.includes("NOT_CONFIRMED") && <ActionForm variant="secondary" action={transitionAction.bind(null, propertySlug, r.id, "NOT_CONFIRMED")} submitLabel="Book (not confirmed)" />}
-                {next.includes("CHECKED_IN") && (
-                  <ActionForm action={transitionAction.bind(null, propertySlug, r.id, "CHECKED_IN")} submitLabel={r.status === "CHECKED_OUT" ? "Reopen stay" : "Check in"}>
-                    {r.status !== "CHECKED_OUT" && <Link href={`${base}/reservations/${r.id}/check-in`} className="text-[12px]">Check in with guest details and ID</Link>}
-                  </ActionForm>
-                )}
+                {next.includes("CHECKED_IN") && r.status === "CONFIRMED" && <Link href={`${base}/reservations/${r.id}/check-in`} className="inline-flex h-9 items-center justify-center rounded-control bg-accent px-3.5 text-[13px] font-semibold text-white no-underline hover:bg-accent-hover hover:text-white">Check in</Link>}
+                {next.includes("CHECKED_IN") && r.status === "CHECKED_OUT" && <ActionForm variant="secondary" action={transitionAction.bind(null, propertySlug, r.id, "CHECKED_IN")} submitLabel="Reopen stay" />}
                 {next.includes("CHECKED_OUT") && <Link href={`${base}/reservations/${r.id}/check-out`} className="inline-flex h-9 items-center justify-center rounded-control bg-accent px-3.5 text-[13px] font-semibold text-white no-underline hover:bg-accent-hover hover:text-white">Check out</Link>}
                 {next.includes("NO_SHOW") && <ActionForm variant="secondary" action={transitionAction.bind(null, propertySlug, r.id, "NO_SHOW")} submitLabel="Mark no-show" confirm="Mark this booking as a no-show? The room is released and the policy penalty applies." />}
                 {next.includes("CANCELLED") && (
@@ -203,6 +200,7 @@ export default async function ReservationPage({ params }: { params: Promise<{ pr
             </Card>
           )}
 
+          {["CHECKED_IN", "CHECKED_OUT"].includes(r.status) && <Link href={`${base}/reservations/${r.id}/registration-card`} className="text-[13px]">Registration card</Link>}
           <Card title="Guest" actions={<Link href={`${base}/guests/${guest.id}`} className="text-[13px]">Open</Link>}>
             <div className="text-[13px] leading-6">
               <div className="font-semibold">{guest.firstName} {guest.lastName}</div>
