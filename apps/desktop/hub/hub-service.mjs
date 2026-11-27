@@ -62,12 +62,13 @@ function initDatabase(s) {
 }
 
 function pgCtl(args) {
-  return spawnSync(path.join(config.pgBin, exe("pg_ctl")), ["-D", files.pgdata, ...args], { encoding: "utf8" });
+  return spawnSync(path.join(config.pgBin, exe("pg_ctl")), ["-D", files.pgdata, ...args], { encoding: "utf8", windowsHide: true, timeout: 90_000 });
 }
 
 function startPostgres() {
-  const r = pgCtl(["start", "-w", "-t", "60", "-l", p("logs", "postgres.log"), "-o", `-p ${config.pgPort} -h 127.0.0.1`]);
-  if (r.status !== 0 && !/another server might be running|already running/i.test(r.stderr + r.stdout)) throw new Error(`postgres did not start: ${r.stderr || r.stdout}`);
+  // No pipes: on Windows the server inherits pg_ctl's handles, so a piped spawnSync would wait forever.
+  const r = spawnSync(path.join(config.pgBin, exe("pg_ctl")), ["-D", files.pgdata, "start", "-w", "-t", "60", "-l", p("logs", "postgres.log"), "-o", `-p ${config.pgPort} -h 127.0.0.1`], { stdio: "ignore", windowsHide: true, timeout: 90_000 });
+  if (!postgresRunning()) throw new Error(`postgres did not start (pg_ctl exit ${r.status}); see logs\\postgres.log`);
   log("postgres running");
 }
 
