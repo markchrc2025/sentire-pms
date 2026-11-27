@@ -14,6 +14,7 @@ export async function connectionState(): Promise<ConnectionState> {
   let pending: number | null = null;
   let lastSyncAt: string | null = null;
   let online = false;
+  let enrolled = false;
   if (mode === "hub" && process.env.DATABASE_URL) {
     try {
       const { getDb } = await import("@sentire-pms/db");
@@ -22,6 +23,7 @@ export async function connectionState(): Promise<ConnectionState> {
       const [r] = await db.select({ n: count() }).from(outboxEvents).where(isNull(outboxEvents.ackedAt));
       pending = r?.n ?? 0;
       const [st] = await db.select().from(syncState).limit(1);
+      enrolled = Boolean(st?.hubToken);
       if (st?.lastSuccessAt) {
         lastSyncAt = st.lastSuccessAt.toISOString();
         online = Date.now() - st.lastSuccessAt.getTime() < 2 * 60_000;
@@ -30,6 +32,7 @@ export async function connectionState(): Promise<ConnectionState> {
       pending = null;
     }
   }
-  const sync = mode === "cloud" ? "online" : !process.env.CLOUD_SYNC_URL ? "not-configured" : online ? "online" : "offline";
+  // Not connected to Sentire Cloud yet (no enrollment) reads as local only, not as an outage.
+  const sync = mode === "cloud" ? "online" : !enrolled ? "not-configured" : online ? "online" : "offline";
   return { mode, sync, lastSyncAt, pending };
 }
