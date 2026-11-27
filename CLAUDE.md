@@ -96,7 +96,7 @@ Module rule: a module calls another module only through that module's exported s
 
 ## 6. Domain rules (do not break)
 
-1. **Money is integer centavos** (`bigint`, names end in `Centavos` / `_centavos`). Use `src/lib/money.ts` for arithmetic and formatting. Never use floating point for money.
+1. **Money is integer centavos** (`bigint`, names end in `Centavos` / `_centavos`). Use `@sentire-pms/core` (`packages/core/src/money.ts`) for arithmetic and formatting. Never use floating point for money.
 2. **VAT** is 12% and rates are VAT-inclusive by default: `vat = roundHalfUp(amount * 12 / 112)` per line.
 3. **Senior citizen and PWD:** 20% discount and VAT exemption on the qualifying guest's share; store ID number and name; show on the invoice.
 4. **Availability:** every write that changes availability locks the `inventory_days` rows for the room type and dates with `SELECT ... FOR UPDATE` inside the same transaction. Never compute availability in application memory and write later.

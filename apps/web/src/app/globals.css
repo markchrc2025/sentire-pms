@@ -1,0 +1,6 @@
+@import "@sentire-pms/ui/tokens.css";
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); }
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); }
