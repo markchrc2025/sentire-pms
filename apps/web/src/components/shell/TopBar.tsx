@@ -49,11 +49,11 @@ export function TopBar({ propertySlug, propertyName, properties, userInitials, u
           {propertyName}
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
         </button>
-        <label className="flex h-9 max-w-[520px] flex-[1_1_240px] items-center gap-2 rounded-full border border-line bg-surface-muted px-3">
+        <form action={`${base}/reservations`} role="search" className="flex h-9 max-w-[520px] flex-[1_1_240px] items-center gap-2 rounded-full border border-line bg-surface-muted px-3">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#636363" strokeWidth="2" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
-          <span className="sr-only">Search</span>
-          <input placeholder="Search reservations, guests, rooms" className="flex-1 border-0 bg-transparent text-[13px] text-ink outline-none" />
-        </label>
+          <label htmlFor="global-search" className="sr-only">Search reservations and guests</label>
+          <input id="global-search" name="q" placeholder="Search reservations and guests" className="flex-1 border-0 bg-transparent text-[13px] text-ink outline-none" />
+        </form>
         <div className="ml-auto flex items-center gap-1.5">
           <ConnectionStatus initial={connection} />
           {canBook && <Link href={`${base}/reservations/new`} className="flex h-9 items-center gap-1.5 rounded-control bg-accent px-3.5 text-[13px] font-semibold text-white no-underline hover:bg-accent-hover hover:text-white">

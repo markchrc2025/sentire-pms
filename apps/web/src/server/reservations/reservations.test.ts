@@ -190,3 +190,23 @@ describe.skipIf(!TEST_DATABASE_URL)("reservations (integration, Postgres)", () =
     await expect(transition(c.db, other.ctx.ADMIN, id, "CANCELLED", { reason: "x" })).rejects.toBeInstanceOf(NotFoundError);
   });
 });
+
+describe.skipIf(!TEST_DATABASE_URL)("dashboard (integration, Postgres)", () => {
+  it("counts arrivals, in-house, departures and new bookings for the business date", async () => {
+    const c = await freshTestDb();
+    const p = await makeBookableProperty(c.db);
+    const { dashboard } = await import("../dashboard");
+    const g = (n: string) => ({ firstName: n, lastName: "Test" });
+    const a = await createReservation(c.db, p.ctx.FRONT_DESK, { source: "PHONE", status: "CONFIRMED", checkIn: "2026-11-24", checkOut: "2026-11-26", guest: g("A"), rooms: [{ roomTypeId: p.dlx.id, ratePlanId: p.bar.id, adults: 1, roomId: p.dlxRooms[0]!.id }] });
+    await createReservation(c.db, p.ctx.FRONT_DESK, { source: "PHONE", status: "NOT_CONFIRMED", checkIn: "2026-11-24", checkOut: "2026-11-25", guest: g("B"), rooms: [{ roomTypeId: p.dlx.id, ratePlanId: p.bar.id, adults: 1 }] });
+    await createReservation(c.db, p.ctx.FRONT_DESK, { source: "PHONE", status: "CONFIRMED", checkIn: "2026-11-30", checkOut: "2026-12-01", guest: g("C"), rooms: [{ roomTypeId: p.fam.id, ratePlanId: p.bar.id, adults: 1 }] });
+    await transition(c.db, p.ctx.FRONT_DESK, a.id, "CHECKED_IN");
+    const d = await dashboard(c.db, p.ctx.FRONT_DESK);
+    expect([d.lists.arrivals.length, d.lists.inhouse.length, d.lists.departures.length, d.lists.new.length, d.lists.cancellations.length]).toEqual([2, 1, 0, 3, 0]);
+    // 4 sellable rooms (3 DLX, 1 FAM), 2 sold tonight: 50%.
+    expect([d.today.sold, d.today.sellable, d.today.occupancy]).toEqual([2, 4, 50]);
+    expect(d.forecast).toHaveLength(14);
+    expect(d.forecast[6]!.arrivals).toBe(1);
+    await c.pool.end();
+  });
+});

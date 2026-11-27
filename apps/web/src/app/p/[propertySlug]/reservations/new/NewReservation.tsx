@@ -25,6 +25,8 @@ export function NewReservation({ slug, businessDate, tomorrow, sources, canOverb
   const [q, setQ] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  // Lookups (guest search, duplicate check) run in their own transition so they never block saving.
+  const [, lookup] = useTransition();
   const [seq, setSeq] = useState(1);
 
   const search = () =>
@@ -44,12 +46,14 @@ export function NewReservation({ slug, businessDate, tomorrow, sources, canOverb
   const findGuests = (text: string) => {
     setQ(text);
     if (text.trim().length < 2) return setHits([]);
-    start(async () => setHits(await findGuestsAction(slug, text)));
+    lookup(async () => setHits(await findGuestsAction(slug, text)));
   };
 
-  const checkDupes = () => start(async () => setDupes(await duplicatesAction(slug, newGuest)));
+  const checkDupes = () => lookup(async () => setDupes(await duplicatesAction(slug, newGuest)));
 
-  const submit = (form: FormData) =>
+  const submit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
     start(async () => {
       setError(null);
       const r = await createReservationAction(slug, {
@@ -67,6 +71,7 @@ export function NewReservation({ slug, businessDate, tomorrow, sources, canOverb
       });
       if (r?.error) setError(r.error);
     });
+  };
 
   const inCart = (roomTypeId: string) => cart.filter((c) => c.roomTypeId === roomTypeId).length;
 
@@ -145,7 +150,7 @@ export function NewReservation({ slug, businessDate, tomorrow, sources, canOverb
       )}
 
       {cart.length > 0 && (
-        <form action={submit} className="rounded-card border border-line bg-surface p-5">
+        <form onSubmit={submit} className="rounded-card border border-line bg-surface p-5">
           <h2 className="m-0 mb-3 text-[15px] font-semibold">3. Guest and details</h2>
           {guest ? (
             <div className="mb-3 flex items-center gap-3 text-[13px]">
