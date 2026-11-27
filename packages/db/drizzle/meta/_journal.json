@@ -43,6 +43,13 @@
       "when": 1795802279378,
       "tag": "0005_rates_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795802974018,
+      "tag": "0006_reservations",
+      "breakpoints": true
     }
   ]
 }

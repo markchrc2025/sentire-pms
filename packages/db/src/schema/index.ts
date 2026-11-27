@@ -4,3 +4,4 @@ export * from "./audit";
 export * from "./sync";
 export * from "./inventory";
 export * from "./rates";
+export * from "./reservations";

@@ -16,7 +16,7 @@ export function SideNav({ propertySlug, businessDate, allowed }: { propertySlug:
   });
   const activeKey = matches.sort((a, b) => b.path.length - a.path.length)[0]?.key;
   return (
-    <nav aria-label="Main" className="w-[232px] shrink-0 border-r border-line bg-surface px-3 py-4 flex flex-col gap-5 max-md:w-full max-md:border-r-0 max-md:border-b max-md:flex-row max-md:flex-wrap">
+    <nav aria-label="Main" className="print:hidden w-[232px] shrink-0 border-r border-line bg-surface px-3 py-4 flex flex-col gap-5 max-md:w-full max-md:border-r-0 max-md:border-b max-md:flex-row max-md:flex-wrap">
       {visible.map((g) => (
         <div key={g.title} className="flex flex-col gap-0.5">
           <div className="px-2.5 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted">{g.title}</div>

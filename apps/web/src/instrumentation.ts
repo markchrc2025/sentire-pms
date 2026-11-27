@@ -8,6 +8,7 @@ export async function register() {
   await runMigrations();
   console.log(`[boot] migrations applied (mode ${process.env.PMS_MODE ?? "hub"})`);
   if (process.env.PMS_SEED_DEMO === "1" && process.env.PMS_MODE !== "cloud") {
+    await import("./server/demo");
     const seeded = await seedDemo(getDb());
     console.log(seeded ? "[boot] demo property seeded" : "[boot] demo seed skipped, properties exist");
   }
