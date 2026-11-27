@@ -1,0 +1,25 @@
+/* Sentire PMS design tokens: neutral greys, orange as the only accent (see the mockup). */
+:root {
+  --bg: #f7f7f6;
+  --surface: #ffffff;
+  --surface-muted: #fafaf9;
+  --border: #e6e6e4;
+  --border-soft: #efefed;
+  --text: #171717;
+  --text-2: #3f3f3f;
+  --muted: #636363;
+  --accent: #c2410c;
+  --accent-hover: #9a3412;
+  --accent-soft: #fff7ed;
+  --accent-ring: #ea580c;
+  --tile: #2b211c;
+  --status-confirmed: #2563eb;
+  --status-checked-in: #15803d;
+  --status-not-confirmed: #b45309;
+  --status-group: #6d28d9;
+  --status-oos: #991b1b;
+  --status-checked-out: #9ca3af;
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --font: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
