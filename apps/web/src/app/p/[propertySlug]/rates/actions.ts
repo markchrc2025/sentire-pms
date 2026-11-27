@@ -65,11 +65,11 @@ export async function bulkAction(slug: string, _p: S, f: FormData) {
   return runAction(slug, async (db, ctx) => {
     if (apply) {
       const n = await applyBulk(db, ctx, bulkObject(f));
-      return `Applied: ${n} nights changed.`;
+      return `Applied: ${n} night${n === 1 ? "" : "s"} changed.`;
     }
     const changes = await previewBulk(db, ctx, bulkObject(f));
     if (!changes.length) return "Preview: nothing would change.";
     const sample = changes.slice(0, 6).map((c) => `${c.roomTypeCode} ${formatDate(c.date)}: ${formatPeso(c.before.rateCentavos)} to ${formatPeso(c.after.rateCentavos)}`);
-    return `Preview: ${changes.length} nights would change. ${sample.join("; ")}${changes.length > 6 ? "; and more" : ""}. Press Apply to save them all at once.`;
+    return `Preview: ${changes.length} night${changes.length === 1 ? "" : "s"} would change. ${sample.join("; ")}${changes.length > 6 ? "; and more" : ""}. Press Apply to save them all at once.`;
   }, apply);
 }
