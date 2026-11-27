@@ -1,6 +1,6 @@
 import { and, count, eq } from "drizzle-orm";
 import type { Db } from "./index";
-import { organizations, properties, propertyRoles, roomBlocks, rooms, roomTypes, taxFees, users } from "./schema";
+import { dailyRates, organizations, policies, properties, propertyRoles, ratePlans, roomBlocks, rooms, roomTypes, taxFees, users } from "./schema";
 import { defaultTaxFees } from "./defaults";
 import { hashPassword } from "./password";
 
@@ -55,6 +55,7 @@ export async function seedDemo(db: Db, password = process.env.PMS_DEMO_PASSWORD)
     if (!r) await db.insert(propertyRoles).values({ organizationId: prop.organizationId, propertyId: prop.id, userId: u!.id, role: du.role });
   }
   await seedPropertySetup(db, prop.organizationId, prop.id);
+  await seedRates(db, prop.organizationId, prop.id);
   for (const step of extraSteps) await step(db, { organizationId: prop.organizationId, propertyId: prop.id });
   return created;
 }
@@ -82,5 +83,28 @@ async function seedPropertySetup(db: Db, organizationId: string, propertyId: str
         await tx.insert(roomBlocks).values({ organizationId, propertyId, roomId: r105.id, startDate: "2026-11-24", endDate: "2026-11-27", type: "OUT_OF_SERVICE", reason: "[DEMO] Aircon repair" });
       }
     }
+  });
+}
+
+/** Phase 3 demo data: two policies, three rate plans (BAR, NR at 10% off, BB package) and weekend rates. */
+async function seedRates(db: Db, organizationId: string, propertyId: string) {
+  const [{ n } = { n: 0 }] = await db.select({ n: count() }).from(ratePlans).where(eq(ratePlans.propertyId, propertyId));
+  if (n > 0) return;
+  const types = await db.select().from(roomTypes).where(eq(roomTypes.propertyId, propertyId));
+  if (!types.length) return;
+  await db.transaction(async (tx) => {
+    const [flex] = await tx.insert(policies).values({ organizationId, propertyId, name: "Flexible", guarantee: "FIRST_NIGHT", freeCancelHours: 48, lateCancelPenalty: "FIRST_NIGHT", noShowPenalty: "FIRST_NIGHT", holdHours: 24, description: "Free cancellation until 48 hours before arrival. After that, and for no-shows, the first night is charged." }).returning();
+    const [nr] = await tx.insert(policies).values({ organizationId, propertyId, name: "Non-refundable", guarantee: "FULL_STAY", freeCancelHours: null, lateCancelPenalty: "FULL_STAY", noShowPenalty: "FULL_STAY", description: "Paid in full when booked. No refund." }).returning();
+    const [bar] = await tx.insert(ratePlans).values({ organizationId, propertyId, code: "BAR", name: "Best available rate", type: "STANDARD", policyId: flex!.id, sellOnline: true, sortOrder: 1 }).returning();
+    await tx.insert(ratePlans).values({ organizationId, propertyId, code: "NR", name: "Non-refundable, 10% off", type: "DERIVED", parentId: bar!.id, adjustKind: "PERCENT", adjustValue: -1000n, policyId: nr!.id, sellOnline: true, sortOrder: 2 });
+    await tx.insert(ratePlans).values({ organizationId, propertyId, code: "BB", name: "Bed and breakfast", type: "PACKAGE", parentId: bar!.id, packageAddCentavos: 60000n, inclusions: "Breakfast for two", policyId: flex!.id, sellOnline: true, sortOrder: 3 });
+    // Friday and Saturday nights cost ₱400 more for private rooms for the next 120 days.
+    const rows = [];
+    for (let i = 0; i < 120; i++) {
+      const d = new Date(Date.UTC(2026, 10, 24 + i));
+      if (d.getUTCDay() !== 5 && d.getUTCDay() !== 6) continue;
+      for (const t of types) if (t.kind === "PRIVATE") rows.push({ organizationId, propertyId, ratePlanId: bar!.id, roomTypeId: t.id, stayDate: d.toISOString().slice(0, 10), rateCentavos: t.baseRateCentavos + 40000n });
+    }
+    if (rows.length) await tx.insert(dailyRates).values(rows);
   });
 }

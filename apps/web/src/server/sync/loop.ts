@@ -18,7 +18,7 @@ export function startSyncLoop() {
     try {
       const st = await getSyncState(db);
       if (!st?.hubToken || !st.cloudUrl) {
-        await autoEnroll();
+        if (await autoEnroll()) setTimeout(tick, 500);
         return;
       }
       if (st.nextAttemptAt && st.nextAttemptAt > new Date()) return;
@@ -39,15 +39,17 @@ export function startSyncLoop() {
 }
 
 /** Staging convenience: enroll on boot when CLOUD_SYNC_URL and CLOUD_ENROLL_KEY are set. */
-async function autoEnroll() {
+async function autoEnroll(): Promise<boolean> {
   const url = process.env.CLOUD_SYNC_URL;
   const key = process.env.CLOUD_ENROLL_KEY;
-  if (!url || !key) return;
+  if (!url || !key) return false;
   try {
     const db = getDb();
     const id = await enrollThisHub(db, httpTransport(url), { cloudUrl: url, enrollKey: key, hubName: process.env.HUB_NAME ?? "Hub", replace: true });
     console.log(`[sync] enrolled as hub ${id}`);
+    return true;
   } catch (e) {
     console.error("[sync] auto-enroll failed:", (e as Error).message);
+    return false;
   }
 }
