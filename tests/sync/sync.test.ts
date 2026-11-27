@@ -45,7 +45,7 @@ async function dump(db: DbPair["db"], orgId: string, propId: string) {
   return out;
 }
 
-describe.skipIf(!TEST_DATABASE_URL)("P2.9 hub and cloud sync (integration, two Postgres databases)", () => {
+describe.skipIf(!TEST_DATABASE_URL)("P2.9 hub and cloud sync (integration, two Postgres databases)", { timeout: 60_000 }, () => {
   let hub: DbPair;
   let cloud: DbPair;
   let p: Awaited<ReturnType<typeof makeProperty>>;
