@@ -6,7 +6,7 @@ import { Notice } from "./index";
 type Action = (prev: ActionState, form: FormData) => Promise<ActionState>;
 
 /** A form bound to a server action that shows the result message. resetOnOk clears it after success. */
-export function ActionForm({ action, children, submitLabel = "Save", className = "", resetOnOk = false, inline = false, variant = "primary", confirm, showOk = false }: {
+export function ActionForm({ action, children, submitLabel = "Save", className = "", resetOnOk = false, inline = false, variant = "primary", confirm, showOk = false, buttons }: {
   action: Action;
   children?: ReactNode;
   submitLabel?: string;
@@ -16,6 +16,8 @@ export function ActionForm({ action, children, submitLabel = "Save", className =
   variant?: "primary" | "secondary" | "danger";
   confirm?: string;
   showOk?: boolean;
+  /** Own submit buttons (e.g. Preview and Apply, told apart by name="intent"). */
+  buttons?: ReactNode;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
   const ref = useRef<HTMLFormElement>(null);
@@ -34,16 +36,18 @@ export function ActionForm({ action, children, submitLabel = "Save", className =
         // Submit manually so React does not clear the form when the server refuses the input.
         e.preventDefault();
         if (confirm && !window.confirm(confirm)) return;
-        const data = new FormData(e.currentTarget);
+        const data = new FormData(e.currentTarget, (e.nativeEvent as SubmitEvent).submitter);
         startTransition(() => formAction(data));
       }}
       className={inline ? `inline-flex flex-nowrap items-center gap-2 ${className}` : `flex flex-col gap-3 ${className}`}
     >
       {children}
       <div className={inline ? "inline-flex items-center gap-2" : "flex flex-wrap items-center gap-3"}>
-        <button type="submit" disabled={pending} className={`inline-flex h-9 items-center rounded-control border px-3.5 text-[13px] font-semibold disabled:opacity-50 ${btn}`}>
-          {pending ? "Working" : submitLabel}
-        </button>
+        {buttons ?? (
+          <button type="submit" disabled={pending} className={`inline-flex h-9 items-center rounded-control border px-3.5 text-[13px] font-semibold disabled:opacity-50 ${btn}`}>
+            {pending ? "Working" : submitLabel}
+          </button>
+        )}
         {state?.error && (inline ? <span role="alert" className="text-[12px] text-[#991b1b]">{state.error}</span> : <Notice kind="error">{state.error}</Notice>)}
         {state?.ok && (!inline || showOk) && <span role="status" className={`text-[13px] text-[#166534] ${showOk ? "font-semibold" : ""}`}>{state.ok}</span>}
       </div>
