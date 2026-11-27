@@ -32,3 +32,14 @@ export const inboxEvents = pgTable("inbox_events", {
   payload: jsonb("payload").notNull(),
   appliedAt: timestamp("applied_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/** One row per hub: where sync stands. Updated by the hub worker after each round with the cloud. */
+export const syncState = pgTable("sync_state", {
+  id: char("id", { length: 26 }).primaryKey(),
+  hubId: text("hub_id").notNull(),
+  lastPushedSeq: bigint("last_pushed_seq", { mode: "bigint" }).notNull().default(sql`0`),
+  lastPulledCursor: text("last_pulled_cursor"),
+  lastSuccessAt: timestamp("last_success_at", { withTimezone: true }),
+  lastAttemptAt: timestamp("last_attempt_at", { withTimezone: true }),
+  lastError: text("last_error"),
+});

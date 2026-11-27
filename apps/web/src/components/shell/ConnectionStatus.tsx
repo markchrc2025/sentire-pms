@@ -2,18 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-interface Status {
-  mode: "hub" | "cloud";
-  sync: "online" | "offline" | "not-configured";
-  lastSyncAt: string | null;
-  pending: number | null;
-}
+import type { ConnectionState as Status } from "@/server/sync/status";
 
 const POLL_MS = 15_000;
 
 /** Connection state shown on every screen (FR-53). */
-export function ConnectionStatus() {
-  const [s, setS] = useState<Status | null>(null);
+export function ConnectionStatus({ initial }: { initial?: Status | null }) {
+  const [s, setS] = useState<Status | null>(initial ?? null);
   const [reachable, setReachable] = useState(true);
 
   useEffect(() => {

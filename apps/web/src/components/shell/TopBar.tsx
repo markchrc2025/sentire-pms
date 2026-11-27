@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ConnectionStatus } from "./ConnectionStatus";
+import type { ConnectionState as ConnectionStateT } from "@/server/sync/status";
 
 export interface PropertyOption {
   slug: string;
@@ -18,13 +19,17 @@ function Icon({ d, label }: { d: string; label: string }) {
   );
 }
 
-export function TopBar({ propertySlug, propertyName, properties, userInitials }: {
+export function TopBar({ propertySlug, propertyName, properties, userInitials, userName, role, connection }: {
   propertySlug: string;
   propertyName: string;
   properties: PropertyOption[];
   userInitials: string;
+  userName: string;
+  role: string;
+  connection?: ConnectionStateT | null;
 }) {
   const [open, setOpen] = useState(false);
+  const [menu, setMenu] = useState(false);
   const base = `/p/${propertySlug}`;
   return (
     <header className="relative z-20 border-b border-line bg-surface">
@@ -49,7 +54,7 @@ export function TopBar({ propertySlug, propertyName, properties, userInitials }:
           <input placeholder="Search reservations, guests, rooms" className="flex-1 border-0 bg-transparent text-[13px] text-ink outline-none" />
         </label>
         <div className="ml-auto flex items-center gap-1.5">
-          <ConnectionStatus />
+          <ConnectionStatus initial={connection} />
           <Link href={`${base}/reservations/new`} className="flex h-9 items-center gap-1.5 rounded-control bg-accent px-3.5 text-[13px] font-semibold text-white no-underline hover:bg-accent-hover hover:text-white">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
             New reservation
@@ -60,9 +65,21 @@ export function TopBar({ propertySlug, propertyName, properties, userInitials }:
           <Link href={`${base}/housekeeping`} className="flex h-9 w-9 items-center justify-center rounded-control text-ink-2 hover:bg-surface-muted">
             <Icon label="Housekeeping" d="M3 18v-6a2 2 0 012-2h14a2 2 0 012 2v6M3 18h18M3 14h18" />
           </Link>
-          <Link href={`${base}/settings`} aria-label="Account and settings" className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-[#f1e7df] text-xs font-bold text-[#7c2d12] no-underline">
-            {userInitials}
-          </Link>
+          <div className="relative">
+            <button type="button" onClick={() => setMenu((v) => !v)} aria-expanded={menu} aria-label={`Account menu for ${userName}`} className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-[#f1e7df] text-xs font-bold text-[#7c2d12]">
+              {userInitials}
+            </button>
+            {menu && (
+              <div className="absolute right-0 top-10 w-[220px] rounded-card border border-line bg-surface p-3 shadow-[0_12px_32px_rgba(0,0,0,0.12)]">
+                <div className="text-[13px] font-semibold">{userName}</div>
+                <div className="mb-2 text-xs text-muted">{role}</div>
+                <Link href={`${base}/settings`} className="block rounded-control px-2 py-1.5 text-[13px] text-ink no-underline hover:bg-surface-muted">Settings</Link>
+                <form action="/sign-out" method="post">
+                  <button type="submit" className="w-full rounded-control px-2 py-1.5 text-left text-[13px] text-ink hover:bg-surface-muted">Sign out</button>
+                </form>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       {open && (

@@ -149,7 +149,7 @@ Module rule: a module calls another module only through that module's exported s
 | Environment | Where | Database | Deploys |
 |---|---|---|---|
 | Cloud staging | https://pms-staging.apps.sentire.solutions | sentire_pms_staging | every merge to `main` |
-| Staging hub (server stand-in for a hotel hub PC; demo data, `PMS_DEMO_SHELL=1`) | https://pms-hub-staging.apps.sentire.solutions | sentire_pms_hub_staging (demo seed) | every merge to `main` |
+| Staging hub (server stand-in for a hotel hub PC; demo data and demo staff, `PMS_SEED_DEMO=1`) | https://pms-hub-staging.apps.sentire.solutions | sentire_pms_hub_staging (demo seed) | every merge to `main` |
 | Cloud production | https://pms.apps.sentire.solutions | sentire_pms | end of each phase, after UAT passes |
 | Test hub | Windows test PC or VM, `beta` update channel, synced to cloud staging | bundled Postgres | every merge (signed installer from CI) |
 | Pilot and customer hubs | Hotel PCs, `pilot` then `stable` channel | bundled Postgres | promoted at the end of each phase |

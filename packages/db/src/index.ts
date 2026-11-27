@@ -36,4 +36,5 @@ export async function runMigrations(): Promise<void> {
 }
 
 export { schema };
-export { seedDemo, DEMO_PROPERTY_SLUG } from "./seed-demo";
+export { seedDemo, registerDemoStep, DEMO_PROPERTY_SLUG, DEMO_USERS } from "./seed-demo";
+export { hashPassword, verifyPassword, passwordProblem } from "./password";
