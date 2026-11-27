@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "sentire-projects": {
+      "type": "http",
+      "url": "https://projects.apps.sentire.solutions/mcp",
+      "headers": { "Authorization": "Bearer ${SENTIRE_PROJECTS_TOKEN}" }
+    }
+  }
+}
