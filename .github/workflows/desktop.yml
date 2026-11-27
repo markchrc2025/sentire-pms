@@ -1,0 +1,33 @@
+name: Desktop (Windows installer)
+
+on:
+  push:
+    branches: [main]
+    paths: ["apps/desktop/**", ".github/workflows/desktop.yml"]
+  pull_request:
+    paths: ["apps/desktop/**", ".github/workflows/desktop.yml"]
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+      - run: pnpm install --frozen-lockfile
+      - name: Build installer (unsigned until the code-signing certificate arrives, PMS-11)
+        run: pnpm --filter @sentire-pms/desktop desktop:build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sentire-pms-windows-installer
+          path: apps/desktop/src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: error

@@ -15,7 +15,9 @@
     "lint": "eslint .",
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "desktop:dev": "pnpm --filter @sentire-pms/desktop desktop:dev",
+    "desktop:build": "pnpm --filter @sentire-pms/desktop desktop:build"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
