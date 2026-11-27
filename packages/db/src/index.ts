@@ -36,3 +36,4 @@ export async function runMigrations(): Promise<void> {
 }
 
 export { schema };
+export { seedDemo, DEMO_PROPERTY_SLUG } from "./seed-demo";

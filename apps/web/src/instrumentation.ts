@@ -4,7 +4,11 @@ export async function register() {
     console.warn("[boot] DATABASE_URL not set, skipping migrations");
     return;
   }
-  const { runMigrations } = await import("@sentire-pms/db");
+  const { runMigrations, seedDemo, getDb } = await import("@sentire-pms/db");
   await runMigrations();
   console.log(`[boot] migrations applied (mode ${process.env.PMS_MODE ?? "hub"})`);
+  if (process.env.PMS_SEED_DEMO === "1") {
+    const seeded = await seedDemo(getDb());
+    console.log(seeded ? "[boot] demo property seeded" : "[boot] demo seed skipped, properties exist");
+  }
 }
