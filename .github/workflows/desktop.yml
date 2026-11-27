@@ -46,7 +46,13 @@ jobs:
             try { $h = Invoke-RestMethod http://localhost:3000/api/health -TimeoutSec 5; if ($h.db -eq 'ok') { $ok = $true; break } } catch {}
             Start-Sleep 4
           }
-          if (-not $ok) { Get-ChildItem "$env:ProgramData\SentirePMS\logs" | ForEach-Object { Write-Host "== $($_.Name)"; Get-Content $_.FullName -Tail 60 }; exit 1 }
+          if (-not $ok) {
+            # Admins may read the locked-down data folder for diagnosis.
+            icacls "$env:ProgramData\SentirePMS" /grant "*S-1-5-32-544:(OI)(CI)F" /T /C | Out-Null
+            Get-ChildItem "$env:ProgramData\SentirePMS" -Recurse -Depth 1 | Select-Object FullName | Format-Table -HideTableHeaders
+            Get-ChildItem "$env:ProgramData\SentirePMS\logs", "$env:ProgramFiles\Sentire PMS\hub\*.log" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "== $($_.FullName)"; Get-Content $_.FullName -Tail 80 }
+            exit 1
+          }
           $h | ConvertTo-Json
           $r = Invoke-WebRequest http://localhost:3000/sign-in -MaximumRedirection 0 -SkipHttpErrorCheck
           Write-Host "sign-in answers $($r.StatusCode) -> $($r.Headers.Location)"
