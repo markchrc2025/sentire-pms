@@ -28,6 +28,27 @@ cp(path.join(web, ".next", "static"), path.join(out, "app", "apps", "web", ".nex
 if (fs.existsSync(path.join(web, "public"))) cp(path.join(web, "public"), path.join(out, "app", "apps", "web", "public"));
 cp(path.join(root, "packages", "db", "drizzle"), path.join(out, "app", "drizzle"));
 
+// Turbopack loads server externals (pg) under hashed names such as pg-587764f78a6c7a9c, which the
+// standalone output provides as symlinks. Windows builds lose those links, so copy the package
+// under each hashed name the server chunks ask for.
+const chunks = path.join(out, "app", "apps", "web", ".next", "server");
+const wanted = new Set();
+const walk = (d) => {
+  for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+    const f = path.join(d, e.name);
+    if (e.isDirectory()) walk(f);
+    else if (f.endsWith(".js")) for (const m of fs.readFileSync(f, "utf8").matchAll(/["'`]((?:@[a-z0-9-]+\/)?[a-z0-9._-]+)-([0-9a-f]{16})["'`]/g)) wanted.add(`${m[1]}|${m[2]}`);
+  }
+};
+walk(chunks);
+for (const w of wanted) {
+  const [pkg, hash] = w.split("|");
+  const src = path.join(out, "app", "node_modules", pkg);
+  if (!fs.existsSync(src)) continue;
+  cp(src, path.join(out, "app", "node_modules", `${pkg}-${hash}`));
+  console.log(`linked external ${pkg}-${hash}`);
+}
+
 // Postgres
 const tmp = path.join(desktop, ".pgpkg");
 fs.rmSync(tmp, { recursive: true, force: true });
