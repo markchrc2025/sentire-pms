@@ -1,2 +1,4 @@
-// Tables are added module by module (see PMS-4 for the base tables).
-export {};
+export * from "./tenancy";
+export * from "./iam";
+export * from "./audit";
+export * from "./sync";
