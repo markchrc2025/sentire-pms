@@ -1,6 +1,28 @@
+@import "tailwindcss";
 @import "@sentire-pms/ui/tokens.css";
 
-* { box-sizing: border-box; }
-html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); }
-a { color: var(--accent); text-decoration: none; }
-a:hover { color: var(--accent-hover); }
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-line: var(--border);
+  --color-line-soft: var(--border-soft);
+  --color-ink: var(--text);
+  --color-ink-2: var(--text-2);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ring: var(--accent-ring);
+  --color-tile: var(--tile);
+  --radius-control: var(--radius-control);
+  --radius-card: var(--radius-card);
+  --font-sans: var(--font);
+}
+
+@layer base {
+  html, body { background: var(--bg); color: var(--text); font-family: var(--font); }
+  a { color: var(--accent); }
+  a:hover { color: var(--accent-hover); }
+  :focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 2px; }
+}
